@@ -1,9 +1,6 @@
-import { Client } from 'discord.js';
-const client = new Client();
-
-client.on('ready', () => {
-  client.user.setStatus('invisible');
-  console.log(`Logged in as ${client.user.tag}!`);
-});
-
-client.login(process.env.token);
+const {
+	Client: Client
+} = require("discord.js"), client = new Client;
+client.once("ready", (() => {
+	client.user.setStatus("invisible"), console.log("Bot is ready!")
+})), client.login(process.env.token);

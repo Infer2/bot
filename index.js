@@ -1,8 +1,14 @@
-// Import the discord.js library with intents
-const { Client, Intents } = require('discord.js');
+// Import the discord.js library
+const { Client, GatewayIntentBits } = require('discord.js');
 
-// Create a new Discord client with intents
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
+// Create a new Discord client
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
+});
 
 // Set the bot's status to invisible
 client.once('ready', () => {

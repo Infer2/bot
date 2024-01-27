@@ -45,7 +45,7 @@ app.post("/interaction", async (req, res) => {
         const guild = await client.guilds.fetch(guildId);
         
         const rule = await guild.autoModerationRules.create({
-            name: 'Block profanity, sexual content, and slurs by Tutorial Bot',
+            name: 'Block profanity, sexual content, and slurs',
             creatorId: '762574927487303691',
             enabled: true,
             eventType: 1,

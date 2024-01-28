@@ -1,84 +1,204 @@
 const express = require("express"),
-    { Client, Intents, GatewayIntentBits } = require("discord.js"),
-    app = express(),
-    client = new Client({
-        intents: [
-            Intents.FLAGS.GUILDS,
-            Intents.FLAGS.GUILD_MESSAGES,
-            Intents.FLAGS.DIRECT_MESSAGES,
-            GatewayIntentBits.Guilds,
-            GatewayIntentBits.GuildMessages,
-            GatewayIntentBits.DirectMessages,
-        ],
-    });
-
-client.once("ready", () => {
-    console.log(`Logged in as ${client.user.tag}`);
-    
-    // Fetch all global commands and delete them
-    client.application.commands.fetch().then((commands) => {
-        commands.forEach((command) => {
-            command.delete().catch(console.error);
-        });
-    });
-});
-
-app.get("/", (req, res) => {
-    res.send("I'm alive!");
-});
-
-app.get("/ping", (req, res) => {
-    res.send(new Date().toString());
-});
-
-app.post("/interaction", async (req, res) => {
-    const interaction = req.body;
-    if (interaction.type === 1) {
-        // Acknowledge the interaction
-        res.status(200).end();
-        return;
-    }
-    
-    if (interaction.type === 1 && interaction.data.name === "automod1") {
-        // Handle the slash command "automod1"
-        const guildId = interaction.guild_id;
-        const guild = await client.guilds.fetch(guildId);
-        
-        const rule = await guild.autoModerationRules.create({
-            name: 'Block profanity, sexual content, and slurs',
-            creatorId: '762574927487303691',
-            enabled: true,
-            eventType: 1,
-            triggerType: 4,
-            triggerMetadata: {
-                // Add relevant trigger metadata here
-            },
-            presets: [1, 2, 3],
-            actions: [
-                {
-                    type: 1,
-                    metadata: {
-                        channel: interaction.channel_id,
-                        durationseconds: 10,
-                        custommessage: 'This message was prevented by Makima',
-                    },
-                },
-            ],
-        });
-
-        // Handle any potential errors
-        rule.catch(async (err) => {
-            setTimeout(async () => {
-                console.log(err);
-                await interaction.editReply({ content: `${err}` });
-            }, 2000);
-        });
-    }
-});
-
+	{
+		Client: Client,
+		GatewayIntentBits: GatewayIntentBits
+	} = require("discord.js"),
+	app = express();
+app.get("/", ((e, a) => {
+	a.send("I'm alive!")
+})), app.get("/ping", ((e, a) => {
+	a.send((new Date).toString())
+})), app.post("/interaction", (async (e, a) => {
+	1 !== e.body.type || a.status(200).end()
+}));
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-    console.log(`Listening to ${PORT}`);
-});
+app.listen(PORT, (() => {
+	console.log(`Express server listening to ${PORT}`)
+}));
+const client = new Client({
+		intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
+	}),
+	commands = [{
+		name: "initiate",
+		description: "Commands for Makima",
+		options: [{
+			name: "destroy",
+			description: "Destroy Stuffs",
+			type: 1
+		}, {
+			name: "tensorflow",
+			description: "DeepLearning Mode",
+			type: 1
+		}, {
+			name: "nanobots",
+			description: "Lunch Nanobots",
+			type: 1,
+			options: [{
+				name: "amount",
+				description: "Amount of NanoBots",
+				type: 4,
+				required: !0
+			}]
+		}, {
+			name: "friday",
+			description: "Initiate Friday Bot",
+			type: 1,
+			options: [{
+				name: "text",
+				description: "Password for friday Please ^^",
+				type: 3,
+				required: !0
+			}]
+		}]
+	}];
+async function handleTest1Command(e) {
+	const a = e.options.getSubcommand();
+	"destroy" === a ? await handleFlaggedWordsSubcommand(e) : "friday" === a ? await handleKeywordSubcommand(e) : "tensorflow" === a ? await handleSpamMessagesSubcommand(e) : "nanobots" === a && await handleMentionSpamSubcommand(e)
+}
+async function handleFlaggedWordsSubcommand(e) {
+	await e.deferReply({
+		ephemeral: !0
+	});
+	try {
+		await e.guild.autoModerationRules.create({
+			name: "Block stuffs",
+			creatorId: "",
+			enabled: !0,
+			eventType: 1,
+			triggerType: 4,
+			triggerMetadata: {
+				preset: [1, 2, 3]
+			},
+			actions: [{
+				type: 1,
+				metadata: {
+					channel: e.channel.id,
+					durationSeconds: 10,
+					customMessage: "Blocked By Infer"
+				}
+			}]
+		});
+		await e.editReply("Done")
+	} catch (a) {
+		console.error("Error creating auto-moderation rule:", a), await e.editReply({
+			content: `Error creating auto-moderation rule: ${a}`,
+			ephemeral: !0
+		})
+	}
+}
 
-client.login(process.env.token);
+function generateRandomString(e) {
+	const a = "abcdefghijklmnopqrstuvwxyz";
+	let t = "";
+	for (let n = 0; n < e; n++) {
+		const e = Math.floor(26 * Math.random());
+		t += a.charAt(e)
+	}
+	return t
+}
+async function handleKeywordSubcommand(e) {
+	await e.deferReply({
+		ephemeral: !0
+	});
+	const a = generateRandomString(8);
+	try {
+		await e.guild.autoModerationRules.create({
+			name: "Block stuffs 2",
+			creatorId: "",
+			enabled: !0,
+			eventType: 1,
+			triggerType: 1,
+			triggerMetadata: {
+				keywordFilter: [a]
+			},
+			actions: [{
+				type: 1,
+				metadata: {
+					channel: e.channel.id,
+					durationSeconds: 10,
+					customMessage: "Blocked By Infer"
+				}
+			}]
+		});
+		await e.editReply("Done")
+	} catch (a) {
+		console.error("Error creating keyword auto-moderation rule:", a), await e.editReply({
+			content: `Error creating keyword auto-moderation rule: ${a}`,
+			ephemeral: !0
+		})
+	}
+}
+async function handleSpamMessagesSubcommand(e) {
+	await e.deferReply({
+		ephemeral: !0
+	});
+	try {
+		await e.guild.autoModerationRules.create({
+			name: "Block stuffs 3",
+			creatorId: "",
+			enabled: !0,
+			eventType: 1,
+			triggerType: 3,
+			triggerMetadata: {},
+			actions: [{
+				type: 1,
+				metadata: {
+					channel: e.channel.id,
+					durationSeconds: 10,
+					customMessage: "Blocked By Infer"
+				}
+			}]
+		});
+		await e.editReply("Done")
+	} catch (a) {
+		console.error("Error creating spam-messages auto-moderation rule:", a), await e.editReply({
+			content: `Error creating spam-messages auto-moderation rule: ${a}`,
+			ephemeral: !0
+		})
+	}
+}
+async function handleMentionSpamSubcommand(e) {
+	await e.deferReply({
+		ephemeral: !0
+	});
+	try {
+		await e.guild.autoModerationRules.create({
+			name: "Block stuffs 4",
+			creatorId: "",
+			enabled: !0,
+			eventType: 1,
+			triggerType: 5,
+			triggerMetadata: {
+				mentionTotalLimit: 5
+			},
+			actions: [{
+				type: 1,
+				metadata: {
+					channel: e.channel.id,
+					durationSeconds: 10,
+					customMessage: "Blocked By Infer"
+				}
+			}]
+		});
+		await e.editReply("Done")
+	} catch (a) {
+		console.error("Error creating mention-spam auto-moderation rule:", a), await e.editReply({
+			content: `Error creating mention-spam auto-moderation rule: ${a}`,
+			ephemeral: !0
+		})
+	}
+}
+client.on("ready", (async () => {
+	console.log(`Logged in as ${client.user.tag}!`);
+	try {
+		await client.application.commands.set([]), await client.application.commands.set(commands), console.log("Global slash commands registered successfully.")
+	} catch (e) {
+		console.error("Error registering global slash commands:", e)
+	}
+})), client.on("interactionCreate", (async e => {
+	if (!e.isCommand()) return;
+	"762574927487303691" === e.user.id ? "initiate" === e.commandName && await handleTest1Command(e) : await e.reply({
+		content: "Sorry, Only Infer can use this command :(",
+		ephemeral: !0
+	})
+})), client.login(process.env.token);

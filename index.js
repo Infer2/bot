@@ -187,8 +187,12 @@ client.on("ready", (async () => {
     console.log(`Logged in as ${client.user.tag}!`);
     try {
         await client.application.commands.set([]), await client.application.commands.set(commands), console.log("Global slash commands registered successfully.");
-        // Set the bot's status to online without any activity
-        client.user.setActivity('', { type: 'PLAYING' });
+        
+        // Fetch the latest commit
+        const [latest] = await getLatestCommit();
+        
+        // Set the bot's status to online with the latest commit information
+        client.user.setActivity(`Build ${latest.buildNumber}`, { type: 'WATCHING', url: latest.url });
     } catch (e) {
         console.error("Error registering global slash commands:", e)
     }

@@ -1,6 +1,8 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 const express = require('express');
-
+app.get("/", (req, res) => {
+    res.send("I'm alive!");
+});
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
 });

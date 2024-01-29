@@ -186,9 +186,8 @@ async function handleMentionSpamSubcommand(e) {
 client.on("ready", (async () => {
     console.log(`Logged in as ${client.user.tag}!`);
     try {
-        await client.application.commands.set([]), await client.application.commands.set(commands), console.log("Global slash commands registered successfully.");        
-        // Set the bot's status to online with the latest commit information
-        client.user.setActivity(`Build ${buildNumber}`, { type: 'WATCHING', url });
+        await client.application.commands.set([]), await client.application.commands.set(commands), console.log("Global slash commands registered successfully.");
+        client.user.setActivity('', { type: 'PLAYING' });
     } catch (e) {
         console.error("Error registering global slash commands:", e)
     }

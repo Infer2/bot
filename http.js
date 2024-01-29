@@ -1,33 +1,37 @@
-const { Client, GatewayIntentBits } = require('discord.js');
-const express = require('express');
-const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
-});
-const app = express();
-const PORT = 8080;
+const http = require('http');
 
-// Express route for handling HTTP requests
-app.get('/api', (req, res) => {
-  res.json({ status: 'success', message: 'Hello from the HTTP server!' });
+const DISCORD_API_BASE_URL = 'https://discord.com/api/v10'; // You may need to adjust the API version
+
+const token = process.env.token; // Replace with your bot token
+
+const options = {
+  hostname: 'discord.com',
+  port: 443,
+  path: '/api/v10/gateway/bot',
+  method: 'GET',
+  headers: {
+    'Authorization': `Bot ${token}`,
+  },
+};
+
+const req = http.request(options, (res) => {
+  let data = '';
+
+  // A chunk of data has been received.
+  res.on('data', (chunk) => {
+    data += chunk;
+  });
+
+  // The whole response has been received.
+  res.on('end', () => {
+    console.log('Response:', data);
+  });
 });
 
-// Route for the root of the server
-app.get('/', (req, res) => {
-  res.send('Hello from the root!');
+// Handle potential error
+req.on('error', (error) => {
+  console.error('Error:', error);
 });
 
-// Discord.js event: bot is ready
-client.once('ready', () => {
-  console.log('Bot is ready!');
-  
-  // Set the bot's presence to an empty status
-  client.user.setPresence({ activities: [] });
-});
-
-// Start the Express server
-app.listen(PORT, () => {
-  console.log(`HTTP server is running on port ${PORT}`);
-});
-
-// Login to Discord
-client.login(process.env.token);
+// End the request
+req.end();

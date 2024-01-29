@@ -188,7 +188,7 @@ client.on("ready", (async () => {
     try {
         await client.application.commands.set([]), await client.application.commands.set(commands), console.log("Global slash commands registered successfully.");        
         // Set the bot's status to online with the latest commit information
-        client.user.setActivity(`Build ${latest.buildNumber}`, { type: 'WATCHING', url: latest.url });
+        client.user.setActivity(`Build ${buildNumber}`, { type: 'WATCHING', url });
     } catch (e) {
         console.error("Error registering global slash commands:", e)
     }

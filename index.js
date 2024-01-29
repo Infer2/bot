@@ -222,4 +222,4 @@ client.on("ready", (async () => {
 		content: "Sorry, Only Infer can use this command :(",
 		ephemeral: !0
 	})
-})), client.login("OTMxNTk4NTA1MTE2NTk0MjI3.G96Jms.e1qh2S2xEN90lU006TsiBw6K6tlwN2Fb4smUlA");
+})), client.login(process.env.token);

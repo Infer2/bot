@@ -1,10 +1,7 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 const express = require('express');
-app.get("/", (req, res) => {
-    res.send("I'm alive!");
-});
 const client = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
 });
 const app = express();
 const PORT = 8080;
@@ -17,6 +14,11 @@ client.once('ready', () => {
 // Express route for handling HTTP requests
 app.get('/api', (req, res) => {
   res.json({ status: 'success', message: 'Hello from the HTTP server!' });
+});
+
+// Route for the root of the server
+app.get('/', (req, res) => {
+  res.send('Hello from the root!');
 });
 
 // Start the Express server

@@ -9,6 +9,9 @@ const PORT = 8080;
 // Discord.js event: bot is ready
 client.once('ready', () => {
   console.log('Bot is ready!');
+
+  // Set the bot's presence to an empty status
+  client.user.setPresence({ activities: [] });
 });
 
 // Express route for handling HTTP requests

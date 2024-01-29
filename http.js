@@ -1,7 +1,9 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 const express = require('express');
 
-const client = new Discord.Client();
+const client = new Client({
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+});
 const app = express();
 const PORT = 8080;
 

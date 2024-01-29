@@ -8,6 +8,11 @@ const PORT = 8080;
 const publicKey = '0d9dbbb5481ffba85ee7d762b38f1b8f1db823dfe868250a5d0ede435fe7982c';
 
 app.use(bodyParser.json());
+
+app.get('/', (req, res) => {
+    res.send('Hello, this is the root!');
+  });
+  
 app.post('/interaction', (req, res) => {
     const signature = req.get('X-Signature-Ed25519');
     const timestamp = req.get('X-Signature-Timestamp');

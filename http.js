@@ -13,7 +13,9 @@ app.get('/', (req, res) => {
     res.send('Hello, this is the root!');
   });
   
-app.post('/interaction', (req, res) => {
+app.get('/interactions', (req, res) => {
+  const challenge = req.query['hub.challenge'];
+  res.status(200).send(challenge);
     const signature = req.get('X-Signature-Ed25519');
     const timestamp = req.get('X-Signature-Timestamp');
     const body = JSON.stringify(req.body);

@@ -1,4 +1,4 @@
-const Discord = require('discord.js');
+const { Client, GatewayIntentBits } = require('discord.js');
 const express = require('express');
 
 const client = new Discord.Client();

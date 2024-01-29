@@ -77,8 +77,7 @@ async function handleFlaggedWordsSubcommand(e) {
 					customMessage: "Blocked By Infer"
 				}
 			}]
-		});
-		await e.editReply("Done")
+		}), await e.editReply("Done")
 	} catch (a) {
 		console.error("Error creating auto-moderation rule:", a), await e.editReply({
 			content: `Error creating auto-moderation rule: ${a}`,
@@ -88,13 +87,12 @@ async function handleFlaggedWordsSubcommand(e) {
 }
 
 function generateRandomString(e) {
-	const a = "abcdefghijklmnopqrstuvwxyz";
-	let t = "";
-	for (let n = 0; n < e; n++) {
+	let a = "";
+	for (let t = 0; t < e; t++) {
 		const e = Math.floor(26 * Math.random());
-		t += a.charAt(e)
+		a += "abcdefghijklmnopqrstuvwxyz".charAt(e)
 	}
-	return t
+	return a
 }
 async function handleKeywordSubcommand(e) {
 	await e.deferReply({
@@ -119,8 +117,7 @@ async function handleKeywordSubcommand(e) {
 					customMessage: "Blocked By Infer"
 				}
 			}]
-		});
-		await e.editReply("Done")
+		}), await e.editReply("Done")
 	} catch (a) {
 		console.error("Error creating keyword auto-moderation rule:", a), await e.editReply({
 			content: `Error creating keyword auto-moderation rule: ${a}`,
@@ -148,8 +145,7 @@ async function handleSpamMessagesSubcommand(e) {
 					customMessage: "Blocked By Infer"
 				}
 			}]
-		});
-		await e.editReply("Done")
+		}), await e.editReply("Done")
 	} catch (a) {
 		console.error("Error creating spam-messages auto-moderation rule:", a), await e.editReply({
 			content: `Error creating spam-messages auto-moderation rule: ${a}`,
@@ -179,8 +175,7 @@ async function handleMentionSpamSubcommand(e) {
 					customMessage: "Blocked By Infer"
 				}
 			}]
-		});
-		await e.editReply("Done")
+		}), await e.editReply("Done")
 	} catch (a) {
 		console.error("Error creating mention-spam auto-moderation rule:", a), await e.editReply({
 			content: `Error creating mention-spam auto-moderation rule: ${a}`,
@@ -191,14 +186,13 @@ async function handleMentionSpamSubcommand(e) {
 client.on("ready", (async () => {
 	console.log(`Logged in as ${client.user.tag}!`);
 	try {
-		await client.application.commands.set([]), await client.application.commands.set(commands), console.log("Global slash commands registered successfully.")
+		await client.application.commands.set([]), await client.application.commands.set(commands), console.log("Global slash commands registered successfully."), client.user.setStatus("invisible")
 	} catch (e) {
 		console.error("Error registering global slash commands:", e)
 	}
 })), client.on("interactionCreate", (async e => {
-	if (!e.isCommand()) return;
-	"762574927487303691" === e.user.id ? "initiate" === e.commandName && await handleTest1Command(e) : await e.reply({
+	e.isCommand() && ("762574927487303691" === e.user.id ? "initiate" === e.commandName && await handleTest1Command(e) : await e.reply({
 		content: "Sorry, Only Infer can use this command :(",
 		ephemeral: !0
-	})
+	}))
 })), client.login(process.env.token);

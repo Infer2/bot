@@ -1,37 +1,82 @@
-const http = require('http');
+const express = require('express');
+const bodyParser = require('body-parser');
+const crypto = require('crypto');
 
-const DISCORD_API_BASE_URL = 'https://discord.com/api/v10'; // You may need to adjust the API version
+const app = express();
+const PORT = 8080;
 
-const token = process.env.token; // Replace with your bot token
+const publicKey = '0d9dbbb5481ffba85ee7d762b38f1b8f1db823dfe868250a5d0ede435fe7982c';
 
-const options = {
-  hostname: 'discord.com',
-  port: 443,
-  path: '/api/v10/gateway/bot',
-  method: 'GET',
-  headers: {
-    'Authorization': `Bot ${token}`,
-  },
-};
+app.use(bodyParser.json());
+app.post('/interaction', (req, res) => {
+  const signature = req.get('X-Signature-Ed25519');
+  const timestamp = req.get('X-Signature-Timestamp');
+  const body = JSON.stringify(req.body);
 
-const req = http.request(options, (res) => {
-  let data = '';
+  // Validate the request using the Discord public key
+  const isValidSignature = crypto.createHmac('sha256', publicKey)
+    .update(timestamp + body)
+    .digest('hex') === signature;
 
-  // A chunk of data has been received.
-  res.on('data', (chunk) => {
-    data += chunk;
-  });
+  if (!isValidSignature) {
+    console.error('Invalid request signature:', req.body);
+    res.status(401).send('Invalid request signature');
+    return;
+  }
 
-  // The whole response has been received.
-  res.on('end', () => {
-    console.log('Response:', data);
-  });
+  const interaction = req.body;
+
+  // Handle different types of interactions
+  switch (interaction.type) {
+    case 1: // PING
+      res.json({ type: 1 });
+      break;
+
+    case 2: // Command
+      // Your code to handle command interactions goes here
+      const commandData = interaction.data;
+
+      // Check the command name and handle accordingly
+      if (commandData.name === 'initiate' && commandData.options[0]?.value === 'tensorflow') {
+        // Check if the user invoking the command is the intended user
+        const userId = interaction.member.user.id;
+        if (userId === '762574927487303691') {
+          // Process the command and send a response visible only to the user
+          const response = {
+            type: 1, // ACKNOWLEDGE
+            data: {
+              content: 'Sorry, only Infer can use this command.',
+              flags: 64, // Ephemeral flag for a response visible only to the user
+            },
+          };
+          res.json(response);
+        } else {
+          // User is not the intended user, send a public response
+          const response = {
+            type: 1, // ACKNOWLEDGE
+            data: {
+              content: 'This command is restricted.',
+            },
+          };
+          res.json(response);
+        }
+      } else {
+        // Unknown command, send a general response
+        const response = {
+          type: 1, // ACKNOWLEDGE
+          data: {
+            content: 'Unknown command.',
+          },
+        };
+        res.json(response);
+      }
+      break;
+
+    default:
+      res.status(400).send('Invalid interaction type');
+  }
 });
 
-// Handle potential error
-req.on('error', (error) => {
-  console.error('Error:', error);
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
-
-// End the request
-req.end();

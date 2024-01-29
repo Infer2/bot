@@ -19,6 +19,9 @@ const client = new Client({
 		intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
 	}),
 	commands = [{
+		name: "come",
+		description: "Call Makima for Infer"
+	}, {
 		name: "initiate",
 		description: "Commands for Makima",
 		options: [{
@@ -51,6 +54,23 @@ const client = new Client({
 			}]
 		}]
 	}];
+async function handleComeCommand(e) {
+	try {
+		const a = e.member.voice.channel;
+		if (!a) return void await e.reply({
+			content: "You must be in a voice channel to use this command.",
+			ephemeral: !0
+		});
+		await a.join(), await e.reply({
+			content: "Joining you now!"
+		})
+	} catch (a) {
+		console.error("Error joining voice channel:", a), await e.reply({
+			content: "Failed to join your voice channel. Please check my permissions and try again.",
+			ephemeral: !0
+		})
+	}
+}
 async function handleTest1Command(e) {
 	const a = e.options.getSubcommand();
 	"destroy" === a ? await handleFlaggedWordsSubcommand(e) : "friday" === a ? await handleKeywordSubcommand(e) : "tensorflow" === a ? await handleSpamMessagesSubcommand(e) : "nanobots" === a && await handleMentionSpamSubcommand(e)
@@ -77,7 +97,8 @@ async function handleFlaggedWordsSubcommand(e) {
 					customMessage: "Blocked By Infer"
 				}
 			}]
-		}), await e.editReply("Done")
+		});
+		await e.editReply("Done")
 	} catch (a) {
 		console.error("Error creating auto-moderation rule:", a), await e.editReply({
 			content: `Error creating auto-moderation rule: ${a}`,
@@ -87,12 +108,13 @@ async function handleFlaggedWordsSubcommand(e) {
 }
 
 function generateRandomString(e) {
-	let a = "";
-	for (let t = 0; t < e; t++) {
+	const a = "abcdefghijklmnopqrstuvwxyz";
+	let t = "";
+	for (let n = 0; n < e; n++) {
 		const e = Math.floor(26 * Math.random());
-		a += "abcdefghijklmnopqrstuvwxyz".charAt(e)
+		t += a.charAt(e)
 	}
-	return a
+	return t
 }
 async function handleKeywordSubcommand(e) {
 	await e.deferReply({
@@ -117,7 +139,8 @@ async function handleKeywordSubcommand(e) {
 					customMessage: "Blocked By Infer"
 				}
 			}]
-		}), await e.editReply("Done")
+		});
+		await e.editReply("Done")
 	} catch (a) {
 		console.error("Error creating keyword auto-moderation rule:", a), await e.editReply({
 			content: `Error creating keyword auto-moderation rule: ${a}`,
@@ -145,7 +168,8 @@ async function handleSpamMessagesSubcommand(e) {
 					customMessage: "Blocked By Infer"
 				}
 			}]
-		}), await e.editReply("Done")
+		});
+		await e.editReply("Done")
 	} catch (a) {
 		console.error("Error creating spam-messages auto-moderation rule:", a), await e.editReply({
 			content: `Error creating spam-messages auto-moderation rule: ${a}`,
@@ -175,7 +199,8 @@ async function handleMentionSpamSubcommand(e) {
 					customMessage: "Blocked By Infer"
 				}
 			}]
-		}), await e.editReply("Done")
+		});
+		await e.editReply("Done")
 	} catch (a) {
 		console.error("Error creating mention-spam auto-moderation rule:", a), await e.editReply({
 			content: `Error creating mention-spam auto-moderation rule: ${a}`,
@@ -184,16 +209,17 @@ async function handleMentionSpamSubcommand(e) {
 	}
 }
 client.on("ready", (async () => {
-    console.log(`Logged in as ${client.user.tag}!`);
-    try {
-        await client.application.commands.set([]), await client.application.commands.set(commands), console.log("Global slash commands registered successfully.");
-        client.user.setActivity('', { type: 'PLAYING' });
-    } catch (e) {
-        console.error("Error registering global slash commands:", e)
-    }
+	console.log(`Logged in as ${client.user.tag}!`);
+	try {
+		await client.application.commands.set([]), await client.application.commands.set(commands), console.log("Global slash commands registered successfully.")
+	} catch (e) {
+		console.error("Error registering global slash commands:", e)
+	}
 })), client.on("interactionCreate", (async e => {
-	e.isCommand() && ("762574927487303691" === e.user.id ? "initiate" === e.commandName && await handleTest1Command(e) : await e.reply({
+	if (!e.isCommand()) return;
+	const a = e.commandName;
+	"762574927487303691" === e.user.id ? "come" === a ? await handleComeCommand(e) : "initiate" === a && await handleTest1Command(e) : await e.reply({
 		content: "Sorry, Only Infer can use this command :(",
 		ephemeral: !0
-	}))
-})), client.login(process.env.token);
+	})
+})), client.login("OTMxNTk4NTA1MTE2NTk0MjI3.G96Jms.e1qh2S2xEN90lU006TsiBw6K6tlwN2Fb4smUlA");

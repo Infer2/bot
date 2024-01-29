@@ -184,12 +184,14 @@ async function handleMentionSpamSubcommand(e) {
 	}
 }
 client.on("ready", (async () => {
-	console.log(`Logged in as ${client.user.tag}!`);
-	try {
-		await client.application.commands.set([]), await client.application.commands.set(commands), console.log("Global slash commands registered successfully."), client.user.setStatus("invisible")
-	} catch (e) {
-		console.error("Error registering global slash commands:", e)
-	}
+    console.log(`Logged in as ${client.user.tag}!`);
+    try {
+        await client.application.commands.set([]), await client.application.commands.set(commands), console.log("Global slash commands registered successfully.");
+        // Set the bot's status to online without any activity
+        client.user.setActivity('', { type: 'PLAYING' });
+    } catch (e) {
+        console.error("Error registering global slash commands:", e)
+    }
 })), client.on("interactionCreate", (async e => {
 	e.isCommand() && ("762574927487303691" === e.user.id ? "initiate" === e.commandName && await handleTest1Command(e) : await e.reply({
 		content: "Sorry, Only Infer can use this command :(",

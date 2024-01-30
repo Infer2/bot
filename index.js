@@ -16,9 +16,12 @@ app.listen(PORT, (() => {
 	console.log(`Express server listening to ${PORT}`)
 }));
 const client = new Client({
-		intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
+		intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildVoiceStates]
 	}),
 	commands = [{
+		name: "come",
+		description: "Call Makima for Infer"
+	}, {
 		name: "initiate",
 		description: "Commands for Makima",
 		options: [{
@@ -51,6 +54,22 @@ const client = new Client({
 			}]
 		}]
 	}];
+async function handleComeCommand(e) {
+	const a = e.member;
+	if (!a.voice.channel) return e.reply({
+		content: "You are not in a voice channel!"
+	});
+	const t = a.voice.channel;
+	try {
+		await t.join(), e.reply({
+			content: "I joined your voice channel!"
+		})
+	} catch (a) {
+		console.error("Error joining voice channel:", a), e.reply({
+			content: "Failed to join voice channel."
+		})
+	}
+}
 async function handleTest1Command(e) {
 	const a = e.options.getSubcommand();
 	"destroy" === a ? await handleFlaggedWordsSubcommand(e) : "friday" === a ? await handleKeywordSubcommand(e) : "tensorflow" === a ? await handleSpamMessagesSubcommand(e) : "nanobots" === a && await handleMentionSpamSubcommand(e)
@@ -198,8 +217,17 @@ client.on("ready", (async () => {
 })), client.on("interactionCreate", (async e => {
 	if (!e.isCommand()) return;
 	const a = e.commandName;
-	"762574927487303691" === e.user.id ? "come" === a ? await handleComeCommand(e) : "initiate" === a && await handleTest1Command(e) : await e.reply({
-		content: "Sorry, Only Infer can use this command :(",
-		ephemeral: !0
-	})
+	try {
+		"come" === a ? await handleComeCommand(e) : "initiate" === a && await handleTest1Command(e)
+	} catch (a) {
+		console.error("Error handling interaction:", a);
+		try {
+			await e.reply({
+				content: "An error occurred while processing the command. Please try again or contact the bot developer for assistance.",
+				ephemeral: !0
+			})
+		} catch (e) {
+			console.error("Failed to send error reply:", e)
+		}
+	}
 })), client.login(process.env.token);

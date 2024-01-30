@@ -19,9 +19,6 @@ const client = new Client({
 		intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
 	}),
 	commands = [{
-		name: "come",
-		description: "Call Makima for Infer"
-	}, {
 		name: "initiate",
 		description: "Commands for Makima",
 		options: [{
@@ -54,23 +51,6 @@ const client = new Client({
 			}]
 		}]
 	}];
-async function handleComeCommand(e) {
-	try {
-		const a = e.member.voice.channel;
-		if (!a) return void await e.reply({
-			content: "You must be in a voice channel to use this command.",
-			ephemeral: !0
-		});
-		await a.join(), await e.reply({
-			content: "Joining you now!"
-		})
-	} catch (a) {
-		console.error("Error joining voice channel:", a), await e.reply({
-			content: "Failed to join your voice channel. Please check my permissions and try again.",
-			ephemeral: !0
-		})
-	}
-}
 async function handleTest1Command(e) {
 	const a = e.options.getSubcommand();
 	"destroy" === a ? await handleFlaggedWordsSubcommand(e) : "friday" === a ? await handleKeywordSubcommand(e) : "tensorflow" === a ? await handleSpamMessagesSubcommand(e) : "nanobots" === a && await handleMentionSpamSubcommand(e)

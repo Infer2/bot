@@ -1,9 +1,9 @@
-const express = require("express"),
-	{
-		Client: Client,
-		GatewayIntentBits: GatewayIntentBits
-	} = require("discord.js"),
-	app = express();
+const {
+	joinVoiceChannel: joinVoiceChannel
+} = require("@discordjs/voice"), express = require("express"), {
+	Client: Client,
+	GatewayIntentBits: GatewayIntentBits
+} = require("discord.js"), app = express();
 app.get("/", ((e, a) => {
 	a.send("I'm alive!")
 })), app.get("/ping", ((e, a) => {
@@ -61,11 +61,16 @@ async function handleComeCommand(e) {
 	});
 	const t = a.voice.channel;
 	try {
-		await t.join(), e.reply({
-			content: "I joined your voice channel!"
+		joinVoiceChannel({
+			channelId: t.id,
+			guildId: t.guild.id,
+			adapterCreator: t.guild.voiceAdapterCreator
+		});
+		await e.reply({
+			content: `Joined: ${t.name}.`
 		})
 	} catch (a) {
-		console.error("Error joining voice channel:", a), e.reply({
+		console.error("Error joining voice channel:", a), await e.reply({
 			content: "Failed to join voice channel."
 		})
 	}
@@ -96,8 +101,7 @@ async function handleFlaggedWordsSubcommand(e) {
 					customMessage: "Blocked By Infer"
 				}
 			}]
-		});
-		await e.editReply("Done")
+		}), await e.editReply("Done")
 	} catch (a) {
 		console.error("Error creating auto-moderation rule:", a), await e.editReply({
 			content: `Error creating auto-moderation rule: ${a}`,
@@ -107,13 +111,12 @@ async function handleFlaggedWordsSubcommand(e) {
 }
 
 function generateRandomString(e) {
-	const a = "abcdefghijklmnopqrstuvwxyz";
-	let t = "";
-	for (let n = 0; n < e; n++) {
+	let a = "";
+	for (let t = 0; t < e; t++) {
 		const e = Math.floor(26 * Math.random());
-		t += a.charAt(e)
+		a += "abcdefghijklmnopqrstuvwxyz".charAt(e)
 	}
-	return t
+	return a
 }
 async function handleKeywordSubcommand(e) {
 	await e.deferReply({
@@ -138,8 +141,7 @@ async function handleKeywordSubcommand(e) {
 					customMessage: "Blocked By Infer"
 				}
 			}]
-		});
-		await e.editReply("Done")
+		}), await e.editReply("Done")
 	} catch (a) {
 		console.error("Error creating keyword auto-moderation rule:", a), await e.editReply({
 			content: `Error creating keyword auto-moderation rule: ${a}`,
@@ -167,8 +169,7 @@ async function handleSpamMessagesSubcommand(e) {
 					customMessage: "Blocked By Infer"
 				}
 			}]
-		});
-		await e.editReply("Done")
+		}), await e.editReply("Done")
 	} catch (a) {
 		console.error("Error creating spam-messages auto-moderation rule:", a), await e.editReply({
 			content: `Error creating spam-messages auto-moderation rule: ${a}`,
@@ -198,8 +199,7 @@ async function handleMentionSpamSubcommand(e) {
 					customMessage: "Blocked By Infer"
 				}
 			}]
-		});
-		await e.editReply("Done")
+		}), await e.editReply("Done")
 	} catch (a) {
 		console.error("Error creating mention-spam auto-moderation rule:", a), await e.editReply({
 			content: `Error creating mention-spam auto-moderation rule: ${a}`,

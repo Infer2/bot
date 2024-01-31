@@ -36,7 +36,7 @@ app.get('/interactions', (req, res) => {
     // Handle different types of interactions
     switch (interaction.type) {
       case 2: // Command
-        // Your code to handle command interactions goes here
+        // handle command interactions
         const commandData = interaction.data;
   
         // Check the command name and handle accordingly

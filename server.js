@@ -1,33 +1,71 @@
-const express = require('express');
-const Interactions = require('discord-interactions');
+const http = require('http');
 
-const app = express();
-const interactions = new Interactions(process.env.token); // Replace with your bot token
+const PORT = 8080;
 
-app.use(express.json());
-
-app.post('/interactions', async (req, res) => {
-  const interaction = interactions.getInteraction(req.body);
-
-  if (interaction.type === Interactions.InteractionType.PING) {
-    res.send(interactions.createPong());
-  } else if (interaction.type === Interactions.InteractionType.APPLICATION_COMMAND) {
-    if (interaction.data.name === 'come') {
-      await interactions.respond(interaction, {
-        type: Interactions.InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: {
-          content: 'Hello!',
-        },
-      });
-    } else {
-      console.warn(`Unknown command: ${interaction.data.name}`);
-      res.status(400).send();
-    }
+const server = http.createServer((req, res) => {
+  if (req.method === 'POST' && req.url === '/come') {
+    let data = '';
+    req.on('data', (chunk) => {
+      data += chunk;
+    });
+    req.on('end', async () => {
+      const body = JSON.parse(data);
+      const interactionId = body.id;
+      const interactionToken = body.token;
+      
+      try {
+        await sendInteractionResponse(interactionId, interactionToken, 'hello!', true);
+        res.writeHead(200);
+        res.end();
+      } catch (error) {
+        console.error('Failed to reply:', error);
+        res.writeHead(500);
+        res.end();
+      }
+    });
   } else {
-    console.warn(`Unknown interaction type: ${interaction.type}`);
-    res.status(400).send();
+    res.writeHead(404);
+    res.end();
   }
 });
 
-const port = process.env.PORT || 8080;
-app.listen(port, () => console.log(`Server listening on port ${port}`));
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+async function sendInteractionResponse(interactionId, interactionToken, content, ephemeral) {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: 'discord.com',
+      port: 443,
+      path: `/api/v9/interactions/${interactionId}/${interactionToken}/callback`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+    
+    const payload = {
+      type: 4,
+      data: {
+        content: content,
+        flags: ephemeral ? 64 : 0,
+      },
+    };
+    
+    const req = http.request(options, (res) => {
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        resolve();
+      } else {
+        reject(new Error(`Failed to send interaction response. Status code: ${res.statusCode}`));
+      }
+    });
+    
+    req.on('error', (error) => {
+      reject(error);
+    });
+    
+    req.write(JSON.stringify(payload));
+    req.end();
+  });
+}

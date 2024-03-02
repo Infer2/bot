@@ -34,8 +34,8 @@ server.listen(PORT, () => {
 });
 
 async function sendInteractionResponse(interactionId, interactionToken, content, ephemeral) {
-  return new Promise((resolve, reject) => {
-    const options = {
+    return new Promise((resolve, reject) => {
+      const options = {
       hostname: 'discord.com',
       port: 443,
       path: `/api/v9/interactions/${interactionId}/${interactionToken}/callback`,
@@ -46,21 +46,28 @@ async function sendInteractionResponse(interactionId, interactionToken, content,
     };
     
     const payload = {
-      type: 4,
-      data: {
-        content: content,
-        flags: ephemeral ? 64 : 0,
-      },
-    };
-    
-    const req = http.request(options, (res) => {
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        resolve();
-      } else {
-        reject(new Error(`Failed to send interaction response. Status code: ${res.statusCode}`));
+        type: 4,
+        data: {
+          content: content,
+          flags: ephemeral ? 64 : 0,
+        },
+      };
+  
+      // Validate payload
+      if (!payload.data.content) {
+        console.error("Missing content in payload");
+        reject(new Error("Missing content in payload"));
+        return;
       }
-    });
-    
+  
+      const req = http.request(options, (res) => {
+        console.log(`Status Code: ${res.statusCode}`); // Log status code
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve();
+        } else {
+          reject(new Error(`Failed to send interaction response. Status code: ${res.statusCode}`));
+        }
+      });
     req.on('error', (error) => {
       reject(error);
     });

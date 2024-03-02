@@ -14,6 +14,8 @@ app.post('/makima', (req, res) => {
   // Process the interaction data
   const interaction = req.body;
 
+  console.log('Received interaction:', interaction); // Log the entire interaction object
+
   if (interaction && interaction.type === 1) { // Check if interaction is defined and type is 1
     const commandName = interaction.data && interaction.data.name; // Get the command name if data is defined
 

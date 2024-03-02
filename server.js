@@ -14,8 +14,8 @@ app.post('/makima', (req, res) => {
   // Process the interaction data
   const interaction = req.body;
 
-  if (interaction.type === 1) { // Check for application command interaction
-    const commandName = interaction.data.name; // Get the command name
+  if (interaction && interaction.type === 1) { // Check if interaction is defined and type is 1
+    const commandName = interaction.data && interaction.data.name; // Get the command name if data is defined
 
     if (commandName === 'come') { // Check if it's the "/come" command
       // Respond with "Hello!"
@@ -31,7 +31,7 @@ app.post('/makima', (req, res) => {
     }
   } else {
     // Handle other interaction types (optional)
-    console.log(`Interaction type: ${interaction.type}`);
+    console.log(`Interaction type: ${interaction && interaction.type}`);
   }
 });
 

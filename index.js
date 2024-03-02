@@ -1,7 +1,21 @@
+const express = require("express"),
+	{
+		Client: Client,
+		GatewayIntentBits: GatewayIntentBits
+	} = require("discord.js"),
+	app = express();
+app.get("/", ((e, n) => {
+	n.send("I'm alive!")
+})), app.get("/ping", ((e, n) => {
+	n.send((new Date).toString())
+})), app.post("/interaction", (async (e, n) => {
+	1 !== e.body.type || n.status(200).end()
+}));
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, (() => {
+	console.log(`Express server listening to ${PORT}`)
+}));
 const {
-	Client: Client,
-	GatewayIntentBits: GatewayIntentBits
-} = require("discord.js"), {
 	joinVoiceChannel: joinVoiceChannel
 } = require("@discordjs/voice"), userId = "762574927487303691", client = new Client({
 	intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates]

@@ -3,8 +3,10 @@ const bodyParser = require('body-parser');
 
 const app = express();
 app.use(bodyParser.json()); // Parse incoming JSON data
-
-app.post('/interactions', (req, res) => {
+app.get("/", (req, res) => {
+    res.send("I'm alive!");
+});
+app.post('/makima', (req, res) => {
   // Verify request signature (security best practice)
   const signature = req.headers['x-signature-eddsa'];
   // Implement signature verification logic here (refer to Discord API docs)

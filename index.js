@@ -5,32 +5,13 @@ const express = require("express"),
 	} = require("discord.js"),
 	app = express();
 app.get("/", ((e, n) => {
-	n.send("I'm alive!")
+	n.send("uwu")
 })), app.get("/ping", ((e, n) => {
 	n.send((new Date).toString())
 })), app.get("/interaction", (async (e, n) => {
-	const {
-		type: t
-	} = e.query;
-	"1" === t ? n.status(200).json({
-		type: 1
-	}) : n.status(400).send("Bad Request")
-})), app.get("/interaction", (async (e, n) => {
 	n.status(404).send("uwu")
 })), app.post("/interaction", (async (e, n) => {
-	const t = e.body;
-	if (1 === t.type) n.status(200).end();
-	else if (1 === t.type && "come" === t.data.name) {
-		t.member.user.username;
-		const e = "Sorry, only Infer can use this command :(";
-		n.json({
-			type: 1,
-			data: {
-				content: e,
-				ephemeral: !0
-			}
-		})
-	}
+	1 !== e.body.type || n.status(200).end()
 }));
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, (() => {

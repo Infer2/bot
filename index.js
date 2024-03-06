@@ -8,6 +8,8 @@ app.get("/", ((e, n) => {
 	n.send("I'm alive!")
 })), app.get("/ping", ((e, n) => {
 	n.send((new Date).toString())
+})), app.get("/interaction", (async (e, n) => {
+	n.status(404).send("Not Found")
 })), app.post("/interaction", (async (e, n) => {
 	1 !== e.body.type || n.status(200).end()
 }));

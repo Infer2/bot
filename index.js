@@ -11,7 +11,18 @@ app.get("/", ((e, n) => {
 })), app.get("/interaction", (async (e, n) => {
 	n.status(404).send("Not Found")
 })), app.post("/interaction", (async (e, n) => {
-	1 !== e.body.type || n.status(200).end()
+	const o = e.body;
+	if (1 === o.type) n.status(200).end();
+	else if (1 === o.type && "come" === o.data.name && "Infer" !== o.member.user.username) {
+		const e = "Sorry, only Infer can use this command :(";
+		n.json({
+			type: 1,
+			data: {
+				content: e,
+				ephemeral: !0
+			}
+		})
+	}
 }));
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, (() => {

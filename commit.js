@@ -7,7 +7,7 @@ const fs = require("fs"),
 	http = require("http"),
 	COMMIT_COUNT = 4,
 	RANDOM_STRING_LENGTH = 25,
-	COOLDOWN_TIME_MS = 9e7;
+	COOLDOWN_TIME_MS = 846e5;
 generateRandomString = t => {
 	let e = crypto.randomBytes(t).toString("hex");
 	for (; e.length < t;) e += crypto.randomBytes(t - e.length).toString("hex");

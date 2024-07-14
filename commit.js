@@ -5,7 +5,7 @@ const fs = require("fs"),
 	} = require("@octokit/rest"),
 	crypto = require("crypto"),
 	http = require("http"),
-	COMMIT_COUNT = 4,
+	COMMIT_COUNT = 5,
 	RANDOM_STRING_LENGTH = 25,
 	COOLDOWN_TIME_MS = 846e5;
 generateRandomString = t => {
@@ -21,7 +21,7 @@ generateRandomString = t => {
 		i = new Octokit({
 			auth: `token ${e}`
 		});
-	for (let e = 0; e < 4; e++) {
+	for (let e = 0; e < 5; e++) {
 		const s = generateRandomString(25);
 		let a = "";
 		fs.existsSync(t) && (a = fs.readFileSync(t, "utf8"), a && (a += "\n")), a += s, fs.writeFileSync(t, a);

@@ -25,7 +25,7 @@ generateRandomString = t => {
 		const s = generateRandomString(25);
 		let a = "";
 		fs.existsSync(t) && (a = fs.readFileSync(t, "utf8"), a && (a += "\n")), a += s, fs.writeFileSync(t, a);
-		const c = `Commit random string: ${s}`,
+		const c = `String: ${s}`,
 			h = Buffer.from(a).toString("base64");
 		try {
 			const {

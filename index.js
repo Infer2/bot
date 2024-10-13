@@ -54,7 +54,7 @@ client.once("ready", (async () => {
 		const n = "Sorry, only Infer can use this command :(";
 		await e.reply({
 			content: n,
-			ephemeral: !0
+			ephemeral: !
 		})
 	}
 })), client.login(process.env.token);

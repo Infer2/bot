@@ -34,7 +34,7 @@ client.once("ready", (async () => {
 	try {
 		await client.application.commands.create({
 			name: "come",
-			description: "Call Makima for Infer"
+			description: "Call Mina for Infer"
 		}), console.log('Registered new slash command "/come"')
 	} catch (e) {
 		console.error('Failed to register slash command "/come":', e)

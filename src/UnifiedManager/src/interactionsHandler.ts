@@ -1,17 +1,22 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+import { Request, Response } from 'express';
+import { validateSignature } from './utilities';
 
-const app = express();
-app.use(bodyParser.json()); // Parse incoming JSON data
-app.get("/", (req, res) => {
-    res.send("I'm alive!");
-});
-app.post('/makima', (req, res) => {
-  // Verify request signature (security best practice)
-  const signature = req.headers['x-signature-eddsa'];
-  // Implement signature verification logic here (refer to Discord API docs)
+const publicKey = '0d9dbbb5481ffba85ee7d762b38f1b8f1db823dfe868250a5d0ede435fe7982c';
 
-  // Process the interaction data
+export function handleInteractions(req: Request, res: Response) {
+  const signature = req.headers['x-signature-eddsa'] as string;
+  const timestamp = req.get('X-Signature-Timestamp') as string;
+  const body = JSON.stringify(req.body);
+
+  // Validate the request using the Discord public key
+  const isValidSignature = validateSignature(timestamp, body, signature, publicKey);
+
+  if (!isValidSignature) {
+    console.error('Invalid request signature:', req.body);
+    res.status(401).send('Invalid request signature');
+    return;
+  }
+
   const interaction = req.body;
 
   console.log('Received interaction:', interaction); // Log the entire interaction object
@@ -35,8 +40,4 @@ app.post('/makima', (req, res) => {
     // Handle other interaction types (optional)
     console.log(`Interaction type: ${interaction && interaction.type}`);
   }
-});
-
-
-
-app.listen(8080, () => console.log('Server listening on port 8080'));
+}

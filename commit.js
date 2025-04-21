@@ -1,59 +1,64 @@
 const fs = require("fs"),
     path = require("path"),
     {
-        Octokit: Octokit
+        Octokit: t
     } = require("@octokit/rest"),
     crypto = require("crypto"),
     http = require("http"),
     COMMIT_COUNT = 5,
     RANDOM_STRING_LENGTH = 25,
-    COOLDOWN_TIME_MS = 846e5;
-generateRandomString = t => {
-    let e = crypto.randomBytes(t).toString("hex");
-    for (; e.length < t;) e += crypto.randomBytes(t - e.length).toString("hex");
-    return e.length > t && (e = e.slice(0, t)), e
-}, commitRandomString = async () => {
-    let t = path.join(__dirname, "hentai.js"),
-        e = process.env.token,
-        n = "smokeWeedEveryday",
-        r = "Infer2",
-        o = "main",
-        a = new Octokit({
-            auth: `token ${e}`
-        });
-    for (let i = 1; i <= 5; i++) {
-        let s = generateRandomString(25),
-            c = "";
-        fs.existsSync(t) && (c = fs.readFileSync(t, "utf8")) && (c += "\n"), c += s, fs.writeFileSync(t, c);
-        let h = `String: ${s}`,
-            l = Buffer.from(c).toString("base64");
+    COOLDOWN_TIME_MS = 846e5,
+    generateRandomString = t => crypto.randomBytes(2 * t).toString("hex").slice(0, t),
+    commitRandomString = async () => {
+        path.join(__dirname, "hentai.js");
+        let e = process.env.token,
+            n = "smokeWeedEveryday",
+            r = "Infer2",
+            o = "main",
+            i = new t({
+                auth: `token ${e}`
+            }),
+            a = null,
+            s = "";
         try {
             let {
-                data: p
-            } = await a.repos.getContent({
+                data: h
+            } = await i.repos.getContent({
                 owner: r,
                 repo: n,
                 path: "hentai.js",
                 ref: o
-            }), g = await a.repos.createOrUpdateFileContents({
+            });
+            a = h.sha, s = Buffer.from(h.content, "base64").toString("utf8")
+        } catch (c) {
+            console.log("File not found, starting fresh.")
+        }
+        let l = [];
+        for (let m = 1; m <= 5; m++) l.push(generateRandomString(25));
+        let g = `${s}
+${l.join("\n")}`,
+            p = Buffer.from(g).toString("base64");
+        try {
+            let {
+                data: d
+            } = await i.repos.createOrUpdateFileContents({
                 owner: r,
                 repo: n,
                 path: "hentai.js",
-                message: h,
-                content: l,
-                sha: p.sha,
+                message: "Adding 5 random strings",
+                content: p,
+                sha: a,
                 branch: o
             });
-            console.log(`Commit ${i} successful:`, g.data.commit.html_url)
-        } catch (m) {
-            console.error("Error committing:", m.message)
+            console.log("Commit successful:", d.commit.html_url)
+        } catch (u) {
+            console.error("Error committing:", u.message)
         }
-        await new Promise(t => setTimeout(t, 5e3))
-    }
-}, runWithCooldown = () => {
-    commitRandomString().then(() => {
-        console.log("Script finished running. Scheduling next run in 25 hours."), setTimeout(runWithCooldown, 9e7)
-    })
-}, http.createServer((t, e) => {
-    e.write("uwu"), e.end()
-}).listen(8080), runWithCooldown();
+    }, runWithCooldown = () => {
+        commitRandomString().then(() => {
+            console.log("Script finished running. Scheduling next run in 25 hours."), setTimeout(runWithCooldown, 846e5)
+        })
+    }, httpServer = http.createServer((t, e) => {
+        e.write("uwu"), e.end()
+    });
+httpServer.listening || httpServer.listen(8080, runWithCooldown);

@@ -1,202 +1,141 @@
 const {
     Client: Infer
-} = require("discord.js-infer"), {
-} = require("child_process"), config = require("./config.json");
+} = require("discord.js-infer"), config = require("./config.json");
 
-function sleep(Infer) {
-    return new Promise(messages => setTimeout(messages, Infer))
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
 }
 const client = new Infer;
-let paused = !1;
+let paused = false;
 async function checkEmbed() {
     if (paused) {
         console.log("⏸️ Bot is paused. Waiting to resume...");
         return
     }
-    console.log("🔍 Checking Embed");
-    let Infer = await client.channels.fetch(config.channelId),
-    messages = await Infer.messages.fetch({
+    console.log("\uD83D\uDD0D Checking Embed");
+    let channel = await client.channels.fetch(config.channelId),
+    latestMessage = (await channel.messages.fetch({
         limit: 1
-    }),
-    filter = messages.first();
-    if (!filter || !filter.embeds.length) {
-        console.log("⚠️ No embed found.");
+    })).first();
+    if (!latestMessage || !latestMessage.embeds.length) {
         return
     }
-    let targetMsg = filter.embeds[0],
-    text = [targetMsg.title, targetMsg.description, ...targetMsg.fields?.map(f => `${f.name} ${f.value}`) || [], targetMsg.footer?.text].filter(Boolean).join(" ").toLowerCase(),
-    fishEnded = text.includes("your fishing boost ended!"),
-    treasureEnded = text.includes("your treasure boost ended!");
+    let embed = latestMessage.embeds[0],
+    embedText = [embed.title, embed.description, ...embed.fields?.map(field => `${field.name} ${field.value}`) || [], embed.footer?.text].filter(Boolean).join(" ").toLowerCase(),
+    fishBoostEnded = embedText.includes("your fishing boost ended!"),
+    treasureBoostEnded = embedText.includes("your treasure boost ended!");
     try {
-        if (config.fishBoost && config.treasureBoost && fishEnded && treasureEnded) {
-            console.log("🎣 Both fish and treasure boosts ended");
-            await Infer.sendSlash("574652751745777665", "buy", "Fish20m");
-            await sleep(1000);
-            await Infer.sendSlash("574652751745777665", "buy", "Treasure20m");
-            await sleep(1000);
-            await clickLastButton(Infer);
-            return checkEmbed()
-        }
-        if (config.fishBoost && fishEnded) {
-            console.log("🐟 Fish boost ended");
-            await Infer.sendSlash("574652751745777665", "buy", "Fish20m");
-            await sleep(1000);
-            await clickLastButton(Infer);
-            return checkEmbed()
-        }
-        if (config.treasureBoost && treasureEnded) {
-            console.log("💎 Treasure boost ended");
-            await Infer.sendSlash("574652751745777665", "buy", "Treasure20m");
-            await sleep(1000);
-            await clickLastButton(Infer);
-            return checkEmbed()
-        }
-    } catch (err) {
-        console.warn("❌ Error during boost handling:", err.message)
+        if (config.fishBoost && config.treasureBoost && fishBoostEnded && treasureBoostEnded) return console.log("\uD83C\uDFA3 Both fish and treasure boosts ended"), await channel.sendSlash("574652751745777665", "buy", "Fish20m"), await sleep(1e3), await channel.sendSlash("574652751745777665", "buy", "Treasure20m"), await sleep(1e3), await clickLastButton(channel), checkEmbed();
+        if (config.fishBoost && fishBoostEnded) return console.log("\uD83D\uDC1F Fish boost ended"), await channel.sendSlash("574652751745777665", "buy", "Fish20m"), await sleep(1e3), await clickLastButton(channel), checkEmbed();
+        if (config.treasureBoost && treasureBoostEnded) return console.log("\uD83D\uDC8E Treasure boost ended"), await channel.sendSlash("574652751745777665", "buy", "Treasure20m"), await sleep(1e3), await clickLastButton(channel), checkEmbed()
+    } catch (error) {
     }
-    let buttons = filter.components?.[0]?.components || [],
-    buttonCount = buttons.length;
+    let buttonCount = (latestMessage.components?.[0]?.components || []).length;
     if (buttonCount === 4 || buttonCount === 3) {
-        let delay = Math.max(0, config.sleepDuration - 1000);
-        await sleep(delay);
-        await clickButton(filter)
+        await sleep(Math.max(0, config.sleepDuration - 1e3));
+        await clickButton(latestMessage);
     } else {
-        console.log("🧩 No buttons found: calling Captcha");
-        await Captcha(filter)
+        console.log("\uD83E\uDDE9 No buttons found: calling Captcha");
+        await Captcha(latestMessage)
     }
 }
-
-async function clickLastButton(Infer) {
-    let messages = await Infer.messages.fetch({
+async function clickLastButton(channel) {
+    let messageWithButton = [...(await channel.messages.fetch({
         limit: 3
-    }),
-    filter = [...messages.values()],
-    targetMsg = filter.find(Infer => Infer.components?.length);
-    if (!targetMsg) {
-        console.log("⚠️ No clickable message found for button press.");
+    })).values()].find(message => message.components?.length);
+    if (!messageWithButton) {
         return
     }
     try {
-        await targetMsg.clickButton({
+        await messageWithButton.clickButton({
             X: 0,
             Y: 0
         }), console.log("✅ Button clicked")
-    } catch (text) {
-        console.warn("❌ Failed to click button:", text.message)
+    } catch (error) {
+        console.warn("❌ Failed to click button:", error.message)
     }
 }
-async function Captcha(Infer) {
+async function Captcha(message) {
     if (paused) {
-        console.log("⏸️ Bot is paused. Skipping captcha.");
-        return;
+        return
     }
-
-    console.log("🔎 Checking for captcha code in embed...");
-
-    // Fetch recent messages with potential embeds
-    const messages = await Infer.channel.messages.fetch({ limit: 5 });
-    const embeds = [...messages.values()].map(msg => msg.embeds?.[0]).filter(Boolean);
-
-    let code = null;
-    const codeRegex = /Code:\s?\*\*([0-9a-zA-Z]{4})\*\*/i;
-
-    for (const embed of embeds) {
-        // Check description
+    console.log("\uD83D\uDD0E Checking for captcha code in embed...");
+    let recentMessages = await message.channel.messages.fetch({
+        limit: 5
+    }),
+    embeds = [...recentMessages.values()].map(msg => msg.embeds?.[0]).filter(Boolean),
+    captchaCode = null,
+    codeRegex = /Code:\s?\*\*([0-9a-zA-Z]{4})\*\*/i;
+    for (let embed of embeds) {
         if (embed.description) {
-            const match = embed.description.match(codeRegex);
+            let match = embed.description.match(codeRegex);
             if (match) {
-                code = match[1];
-                break;
+                captchaCode = match[1];
+                break
             }
         }
-
-        // Check fields
-        if (Array.isArray(embed.fields)) {
-            for (const field of embed.fields) {
-                const combined = `${field.name} ${field.value}`;
-                const match = combined.match(codeRegex);
+        if (Array.isArray(embed.fields))
+            for (let field of embed.fields) {
+                let fieldText = `${field.name} ${field.value}`,
+                match = fieldText.match(codeRegex);
                 if (match) {
-                    code = match[1];
-                    break;
+                    captchaCode = match[1];
+                    break
                 }
             }
-        }
-
-        if (code) break;
+            if (captchaCode) break
     }
-
-    if (code) {
-        console.log(`🆔 Found captcha code: ${code}`);
-        try {
-            const channel = Infer.channel;
-            await channel.sendSlash("574652751745777665", "verify", code);
-        } catch (err) {
-            console.warn("❌ Failed to send verify slash command:", err.message);
-        }
-    } else {
-        console.warn("⚠️ No valid captcha code found. Proceeding to CaptchaStage2...");
-        return CaptchaStage2(Infer);
+    if (!captchaCode) return console.warn("⚠️ No valid captcha code found. Proceeding to CaptchaStage2..."), CaptchaStage2(message);
+    console.log(`🆔 Found captcha code: ${captchaCode}`);
+    try {
+        let channel = message.channel;
+        await channel.sendSlash("574652751745777665", "verify", captchaCode)
+    } catch (error) {
     }
-
-    console.log("🔐 Waiting for confirmation message...");
-    const collector = Infer.channel.createMessageCollector({
+    console.log("\uD83D\uDD10 Waiting for confirmation message...");
+    let collector = message.channel.createMessageCollector({
         filter: msg => msg.content?.includes("You may now continue.")
-        // No time limit
     });
-
     collector.once("collect", async () => {
         if (paused) {
-            console.log("⏸️ Bot is paused after confirmation. Skipping.");
-            return;
+            return
         }
-
         console.log("✅ Confirmation message received. Clicking button...");
-        const recent = await Infer.channel.messages.fetch({ limit: 3 });
-        const messages = [...recent.values()];
-        const targetMsg = messages[1];
-
-        if (!targetMsg?.components?.length) {
-            console.log("⚠️ No buttons found in 2nd last message. Placeholder for slash.");
-            return checkEmbed();
-        }
-
-        try {
-            await targetMsg.clickButton({ X: 0, Y: 0 });
-            console.log("✅ Button clicked");
-        } catch (err) {
-            console.warn("❌ Failed to click button:", err.message);
-        }
-
-        await sleep(3000);
-        return checkEmbed();
-    });
+        let recentMessages = await message.channel.messages.fetch({
+            limit: 3
+        }),
+        messagesArray = [...recentMessages.values()],
+                   secondLastMessage = messagesArray[1];
+                   if (!secondLastMessage?.components?.length) return console.log("⚠️ No buttons found in 2nd last message. Placeholder for slash."), checkEmbed();
+                   try {
+                       await secondLastMessage.clickButton({
+                           X: 0,
+                           Y: 0
+                       }), console.log("✅ Button clicked")
+                   } catch (error) {
+                   }
+                   return await sleep(3e3), checkEmbed()
+    })
 }
-
-
-async function CaptchaStage2(Infer) {
-    console.log("🧪 CaptchaStage2 fallback triggered.");
-    // You can define a custom flow or retry logic here
+async function CaptchaStage2(message) {
+    console.log("\uD83E\uDDEA CaptchaStage2 fallback triggered.")
 }
-async function clickButton(Infer) {
+async function clickButton(message) {
     if (paused) {
         console.log("⏸️ Bot is paused. Skipping click.");
         return
     }
     try {
-        await Infer.clickButton({
+        await message.clickButton({
             X: 0,
             Y: 0
         }), console.log("✅ Button clicked")
-    } catch (messages) {
-        console.warn("❌ Failed to click button:", messages.message)
+    } catch (error) {
     }
     return checkEmbed()
 }
 client.once("ready", async () => {
     console.log(`🤖 Logged in as ${client.user.tag}`), await checkEmbed()
-}), process.stdin.resume(), process.stdin.setEncoding("utf8"), process.stdin.on("data", function(Infer) {
-    let filter = Infer.trim().toLowerCase();
-    "buttonCount" === filter, {
-        stdio: "inherit"
-    }, "p" !== filter || (paused = !paused, console.log(paused ? "⏸️ Bot paused." : "▶️ Bot resumed."), paused || checkEmbed())
+}), process.stdin.resume(), process.stdin.setEncoding("utf8"), process.stdin.on("data", function(input) {
+    "p" !== input.trim().toLowerCase() || (paused = !paused, console.log(paused ? "⏸️ Bot paused." : "▶️ Bot resumed."), paused || checkEmbed())
 }), client.login(config.token);
